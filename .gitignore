@@ -1,0 +1,4 @@
+/.helm/**
+/.kube/**
+/.vscode
+/_data

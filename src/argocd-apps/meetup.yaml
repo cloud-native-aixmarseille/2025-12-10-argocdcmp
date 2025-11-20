@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: meetup
+  namespace: argocd
+spec:
+  destination:
+    namespace: default
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: src/manifests
+    targetRevision: HEAD
+    # NOTE: this can also be declared as a default plugin but lets be specific
+    plugin:
+      name: meetup-cmp
+      env:
+        - name: FACTID
+          value: "f0bed94a1b1a4bfc09f231f96a8b25bf"

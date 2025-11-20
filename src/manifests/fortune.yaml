@@ -1,0 +1,161 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fortune
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fortune-config
+  namespace: fortune
+data:
+  FACT: "<RFACT>"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fortune
+  namespace: fortune
+  labels:
+    app: fortune
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fortune
+  template:
+    metadata:
+      labels:
+        app: fortune
+    spec:
+      initContainers:
+      - name: setup-quote
+        image: busybox:latest
+        env:
+        - name: FACT
+          valueFrom:
+            configMapKeyRef:
+              name: fortune-config
+              key: FACT
+        command:
+        - sh
+        - -c
+        - |
+          cat > /usr/share/nginx/html/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Fortune Quote</title>
+              <style>
+                  body {
+                      font-family: 'Georgia', serif;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      min-height: 100vh;
+                      margin: 0;
+                      padding: 20px;
+                  }
+                  .quote-container {
+                      background: white;
+                      border-radius: 15px;
+                      padding: 40px;
+                      max-width: 700px;
+                      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                  }
+                  .quote-text {
+                      font-size: 24px;
+                      line-height: 1.6;
+                      color: #333;
+                      font-style: italic;
+                      margin-bottom: 20px;
+                  }
+                  .quote-mark {
+                      font-size: 60px;
+                      color: #667eea;
+                      line-height: 0;
+                  }
+                  .quote-footer {
+                      text-align: right;
+                      font-size: 18px;
+                      color: #666;
+                      margin-top: 20px;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="quote-container">
+                  <div class="quote-mark">"</div>
+                  <div class="quote-text">QUOTE_PLACEHOLDER</div>
+                  <div class="quote-footer">— Fortune</div>
+              </div>
+          </body>
+          </html>
+          EOF
+          sed -i "s|QUOTE_PLACEHOLDER|${FACT}|g" /usr/share/nginx/html/index.html
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+          name: http
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+      volumes:
+      - name: html
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fortune
+  namespace: fortune
+  labels:
+    app: fortune
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: fortune
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fortune
+  namespace: fortune
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: fortune.k8s.orb.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: fortune
+            port:
+              number: 80

@@ -1,0 +1,21 @@
+version: '3'
+
+tasks:
+  default:
+    desc: "Run all the setup scripts"
+    cmds:
+      - task traefik
+      - task argocd
+    silent: true
+
+  traefik:
+    dir: ./traefik
+    cmds:
+      - bash ./setup.sh
+    desc: "Run the Traefik setup script"
+
+  argocd:
+    dir: ./argocd
+    cmds:
+      - bash ./setup.sh
+    desc: "Run the ArgoCD setup script"

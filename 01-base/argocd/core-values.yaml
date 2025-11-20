@@ -1,0 +1,61 @@
+global:
+  domain: argocd.k8s.orb.local
+
+configs:
+  secret:
+    # note: the secret is bcrypt hashed (cf https://github.com/argoproj/argo-cd/blob/master/docs/faq.md)
+    argocdServerAdminPassword: "$2a$10$m76gKyMUydJQZrOum3RMFOi0V0uYXZskwe92UmARlecum4rgj2Qlu"
+  params:
+    # Désactiver TLS pour tous les composants
+    server.insecure: true
+    # Augmenter les timeouts pour les opérations Git
+    timeout.reconciliation: 300s
+    timeout.hard.reconciliation: 0s
+  cmp:
+    create: true
+    plugins:
+      meetup-cmp:
+        init:
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+                /usr/local/bin/helm dependency build
+        generate:
+          command: ["/bin/bash", "/argocd-cmp/meetup.sh"]
+
+repoServer:
+  extraContainers:
+    - name: cmp-plugin-meetup
+      command:
+        - "/var/run/argocd/argocd-cmp-server"
+      image: ttl.sh/32a7b440-98e3-4cb5-8cdd-2cc9ed97f1bb:1h@sha256:884a152d96d796c1f9123f1b2ef5cb511b33eb397923e4d548d3d368817c0ccb
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      volumeMounts:
+        - mountPath: /var/run/argocd
+          name: var-files
+        - mountPath: /home/argocd/cmp-server/plugins
+          name: plugins
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: meetup-cmp.yaml
+          name: argocd-cmp-cm
+        - mountPath: /tmp
+          name: cmp-tmp
+  volumes:
+    - name: argocd-cmp-cm
+      configMap:
+        name: argocd-cmp-cm
+    - name: cmp-tmp
+      emptyDir: {}
+
+server:
+  extraArgs:
+  - --insecure
+  ingress:
+    enabled: true
+    hostname: argocd.k8s.orb.local
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    tls: false

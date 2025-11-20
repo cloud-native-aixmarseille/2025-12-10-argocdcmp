@@ -1,0 +1,17 @@
+version: '3'
+
+vars:
+  # FOO: bar
+
+tasks:
+
+  default:
+    cmds:
+      - task --list-all | awk '{ print $2 }' | cut -d ':' -f 1 | grep -vE '^Available|default$' | fzf | xargs -L 1 task
+    silent: true
+
+  base:
+    desc: 'install base components'
+    dir: 01-base
+    cmds:
+      - task

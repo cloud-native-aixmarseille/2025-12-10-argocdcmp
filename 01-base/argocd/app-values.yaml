@@ -1,0 +1,11 @@
+applications:
+
+  # test:
+  #   project: default
+  #   source:
+  #     repoURL: https://github.com/hoverkraft-tech/helm-chart-dufs
+  #     path: dufs
+  #     targetRevision: HEAD
+  #   destination:
+  #     server: https://kubernetes.default.svc
+  #     namespace: default

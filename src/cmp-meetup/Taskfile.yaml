@@ -1,0 +1,16 @@
+version: '3'
+
+vars:
+  UUID: '32a7b440-98e3-4cb5-8cdd-2cc9ed97f1bb'
+  REPOSITORY: 'ttl.sh/{{ .UUID }}'
+  DURATION: '1h'
+  TAG: '{{ .REPOSITORY }}:{{ .DURATION }}'
+  PLATFORM:
+    sh: 'echo ${PLATFORM:-linux/amd64}'
+
+tasks:
+
+  default:
+    desc: 'build docker image for argocd CMP plugin'
+    cmds:
+      - docker buildx build --platform {{ .PLATFORM }} {{.CLI_ARGS }} -t {{ .TAG }} .
