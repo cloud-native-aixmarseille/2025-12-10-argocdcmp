@@ -17,8 +17,8 @@ configs:
     plugins:
       meetup-cmp:
         # STEP-3
-        # discover:
-        #   fileName: ".rfact"
+        discover:
+          fileName: ".rfact"
         init:
           command: ["/bin/bash", "-c"]
           args:

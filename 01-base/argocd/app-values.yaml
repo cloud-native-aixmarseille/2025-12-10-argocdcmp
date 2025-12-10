@@ -10,8 +10,8 @@ applications:
       targetRevision: main
       path: src/manifests
       # NOTE: this can also be declared as a default plugin but lets be specific
-      plugin:
-        name: meetup-cmp
-        env:
-          - name: FACTID
-            value: "f0bed94a1b1a4bfc09f231f96a8b25bf"
+      # plugin:
+      #   name: meetup-cmp
+      #   env:
+      #     - name: FACTID
+      #       value: "f0bed94a1b1a4bfc09f231f96a8b25bf"
