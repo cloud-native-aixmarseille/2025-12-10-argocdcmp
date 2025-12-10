@@ -11,7 +11,7 @@ metadata:
   name: fortune-config
   namespace: fortune
 data:
-  FACT: "<RFACT>"
+  FACT: "There is no place like @127.0.0.1"
 
 ---
 apiVersion: apps/v1
@@ -28,6 +28,8 @@ spec:
       app: fortune
   template:
     metadata:
+      annotations:
+        com.meetup/auto-reload: "now"
       labels:
         app: fortune
     spec:

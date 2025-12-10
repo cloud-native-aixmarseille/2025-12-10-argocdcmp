@@ -15,6 +15,7 @@ kubectl apply -f ingress-route.yaml
 
 echo "+ installing argocd app-of-apps"
 helm upgrade argocd-apps oci://ghcr.io/argoproj/argo-helm/argocd-apps \
+  --namespace argocd \
   --install \
   -f app-values.yaml \
   --version 2.0.2

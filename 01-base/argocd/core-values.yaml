@@ -9,45 +9,50 @@ configs:
     # Désactiver TLS pour tous les composants
     server.insecure: true
     # Augmenter les timeouts pour les opérations Git
-    timeout.reconciliation: 300s
-    timeout.hard.reconciliation: 0s
-  cmp:
-    create: true
-    plugins:
-      meetup-cmp:
-        init:
-          command: ["/bin/bash", "-c"]
-          args:
-            - |
-                /usr/local/bin/helm dependency build
-        generate:
-          command: ["/bin/bash", "/argocd-cmp/meetup.sh"]
+    timeout.reconciliation: 30s
+    timeout.hard.reconciliation: 60s
+  # STEP-1
+  # cmp:
+  #   create: true
+  #   plugins:
+  #     meetup-cmp:
+  #       # STEP-3
+  #       # discover:
+  #       #   fileName: ".rfact"
+  #       init:
+  #         command: ["/bin/bash", "-c"]
+  #         args:
+  #           - |
+  #               echo "Init argocd meetup-cmp plugin"
+  #       generate:
+  #         command: ["/bin/bash", "/argocd-cmp/meetup.sh"]
 
-repoServer:
-  extraContainers:
-    - name: cmp-plugin-meetup
-      command:
-        - "/var/run/argocd/argocd-cmp-server"
-      image: ttl.sh/32a7b440-98e3-4cb5-8cdd-2cc9ed97f1bb:1h@sha256:884a152d96d796c1f9123f1b2ef5cb511b33eb397923e4d548d3d368817c0ccb
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 999
-      volumeMounts:
-        - mountPath: /var/run/argocd
-          name: var-files
-        - mountPath: /home/argocd/cmp-server/plugins
-          name: plugins
-        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
-          subPath: meetup-cmp.yaml
-          name: argocd-cmp-cm
-        - mountPath: /tmp
-          name: cmp-tmp
-  volumes:
-    - name: argocd-cmp-cm
-      configMap:
-        name: argocd-cmp-cm
-    - name: cmp-tmp
-      emptyDir: {}
+# STEP-1
+# repoServer:
+#   extraContainers:
+#     - name: cmp-plugin-meetup
+#       command:
+#         - "/var/run/argocd/argocd-cmp-server"
+#       image: ttl.sh/32a7b440-98e3-4cb5-8cdd-2cc9ed97f1bb:1h@sha256:699aef272badd8cb7c34438bc0efc4c66af0c9c1832be870668cd88a28490847
+#       securityContext:
+#         runAsNonRoot: true
+#         runAsUser: 999
+#       volumeMounts:
+#         - mountPath: /var/run/argocd
+#           name: var-files
+#         - mountPath: /home/argocd/cmp-server/plugins
+#           name: plugins
+#         - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+#           subPath: meetup-cmp.yaml
+#           name: argocd-cmp-cm
+#         - mountPath: /tmp
+#           name: cmp-tmp
+#   volumes:
+#     - name: argocd-cmp-cm
+#       configMap:
+#         name: argocd-cmp-cm
+#     - name: cmp-tmp
+#       emptyDir: {}
 
 server:
   extraArgs:
